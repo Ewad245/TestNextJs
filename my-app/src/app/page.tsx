@@ -1,14 +1,15 @@
+"use client";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function Home() {
   const [folderStatus, setFolderStatus] = useState<{ message: string; success?: boolean } | null>(null);
   const [programCode, setProgramCode] = useState<string>('');
-  
+
   const createFolder = async () => {
     try {
       setFolderStatus({ message: "Creating folder..." });
-      const response = await fetch('/api/folders', { 
+      const response = await fetch('/api/folders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -16,7 +17,7 @@ export default function Home() {
         body: JSON.stringify({ programCode })
       });
       const data = await response.json();
-      
+
       if (data.success) {
         setFolderStatus({ message: `Folder ${data.folderName} created successfully! (${data.totalFolders}/10 folders)`, success: true });
       } else {
