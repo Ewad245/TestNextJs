@@ -6,7 +6,7 @@ import { promisify } from 'util';
 
 // Define the folder where we'll create our folders
 const FOLDERS_DIR = path.join(os.homedir(), 'generated-folders');
-const SOURCE_FILES_DIR = path.join(os.homedir(), 'source-files'); // Directory containing files to copy
+const SOURCE_FILES_DIR = path.join(os.homedir(), 'defaultSource'); // Directory containing files to copy
 const MAX_FOLDERS = 10;
 
 // Ensure the base directory exists
@@ -113,7 +113,7 @@ async function copyFilesToFolder(targetPath: string) {
 // Helper function to create program.c file with provided code
 async function createProgramFile(folderPath: string, programCode: string) {
     try {
-        const programFilePath = path.join(folderPath, 'program.c');
+        const programFilePath = path.join(folderPath, 'main.c');
         await fs.promises.writeFile(programFilePath, programCode);
         return { success: true, message: 'Program file created successfully' };
     } catch (error) {
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
     try {
         // Parse the request body to get the program code
         const { programCode } = await request.json();
-        
+
         // Check if we need to delete the oldest folder
         const folders = getAllFolders();
         if (folders.length >= MAX_FOLDERS) {
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
         // Copy files from source directory to the new folder
         const copyResult = await copyFilesToFolder(folderPath);
-        
+
         // Create program.c file with the provided code
         const programResult = await createProgramFile(folderPath, programCode || '// Empty C program');
 
