@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function Home() {
   const [folderStatus, setFolderStatus] = useState<{ message: string; success?: boolean } | null>(null);
+  const [makeOutput, setMakeOutput] = useState<string>('');
   const [programCode, setProgramCode] = useState<string>('');
 
   const createFolder = async () => {
@@ -20,6 +21,11 @@ export default function Home() {
 
       if (data.success) {
         setFolderStatus({ message: `Folder ${data.folderName} created successfully! (${data.totalFolders}/10 folders)`, success: true });
+        if (data.makeCommand) {
+          setMakeOutput(data.makeOutput || 'No output from make command');
+        } else {
+          setMakeOutput(`Make command failed: ${data.makeCommandMessage}`);
+        }
       } else {
         setFolderStatus({ message: data.message || 'Failed to create folder', success: false });
       }
@@ -64,6 +70,15 @@ export default function Home() {
         {folderStatus && (
           <div className={`p-3 rounded-md text-sm ${folderStatus.success === false ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200' : folderStatus.success === true ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'}`}>
             {folderStatus.message}
+          </div>
+        )}
+        
+        {makeOutput && folderStatus?.success && (
+          <div className="p-3 border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 w-full max-w-md">
+            <h3 className="text-sm font-medium mb-2">Make Command Output:</h3>
+            <pre className="text-xs overflow-auto whitespace-pre-wrap font-mono p-2 bg-gray-100 dark:bg-gray-900 rounded">
+              {makeOutput}
+            </pre>
           </div>
         )}
 

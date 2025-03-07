@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { promisify } from 'util';
+import { exec } from 'child_process';
 
 // Define the folder where we'll create our folders
 const FOLDERS_DIR = path.join(os.homedir(), 'generated-folders');
@@ -122,6 +123,34 @@ async function createProgramFile(folderPath: string, programCode: string) {
     }
 }
 
+// Helper function to run make command in the folder
+async function runMakeCommand(folderPath: string) {
+    return new Promise<{ success: boolean; message: string; output?: string }>((resolve) => {
+        exec('make', { cwd: folderPath }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error running make command: ${error.message}`);
+                resolve({ 
+                    success: false, 
+                    message: `Failed to run make command: ${error.message}`,
+                    output: stderr || stdout 
+                });
+                return;
+            }
+            
+            if (stderr) {
+                console.warn(`Make command warnings: ${stderr}`);
+            }
+            
+            console.log(`Make command output: ${stdout}`);
+            resolve({ 
+                success: true, 
+                message: 'Make command executed successfully', 
+                output: stdout 
+            });
+        });
+    });
+}
+
 // POST handler to create a new folder
 export async function POST(request: Request) {
     try {
@@ -148,6 +177,9 @@ export async function POST(request: Request) {
 
         // Create program.c file with the provided code
         const programResult = await createProgramFile(folderPath, programCode || '// Empty C program');
+        
+        // Run make command in the new folder
+        const makeResult = await runMakeCommand(folderPath);
 
         // Return success response
         return NextResponse.json({
@@ -159,7 +191,10 @@ export async function POST(request: Request) {
             filesCopyMessage: copyResult.message,
             copiedFiles: copyResult.copiedFiles || [],
             programFile: programResult.success,
-            programFileMessage: programResult.message
+            programFileMessage: programResult.message,
+            makeCommand: makeResult.success,
+            makeCommandMessage: makeResult.message,
+            makeOutput: makeResult.output || ''
         });
     } catch (error) {
         console.error('Error creating folder:', error);
