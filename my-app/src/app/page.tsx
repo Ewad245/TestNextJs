@@ -79,6 +79,9 @@ export default function Home() {
         const binaryData = Buffer.from(data.elfData, "base64");
         console.log(data.elfData);
 
+        // Test
+        newSocket.emit("message", "Hello from Node.js!");
+
         // Send the binary data along with file information
         newSocket.emit("send_elf", {
           folderName: data.folderName,
@@ -238,13 +241,12 @@ export default function Home() {
 
           {folderStatus && (
             <div
-              className={`p-3 rounded-md text-sm mb-3 ${
-                folderStatus.success === false
-                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200"
-                  : folderStatus.success === true
+              className={`p-3 rounded-md text-sm mb-3 ${folderStatus.success === false
+                ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200"
+                : folderStatus.success === true
                   ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
                   : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
-              }`}
+                }`}
             >
               <div className="font-medium">Status:</div>
               <div>{folderStatus.message}</div>
