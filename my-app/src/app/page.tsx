@@ -62,9 +62,9 @@ export default function Home() {
 
       const newSocket = io(data.wsUrl);
       setSocket(newSocket);
-      while (data.elfData.length == 0) {}
 
       newSocket.on("connected", () => {
+        while (data.elfData.length == 0) {}
         setConnected(true);
         setFolderStatus((prev) => ({
           ...prev,
