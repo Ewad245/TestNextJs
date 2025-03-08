@@ -18,6 +18,7 @@ export default function Home() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
   const [cpuOutput, setCpuOutput] = useState<string | null>(null);
+  let numOfcall = 0;
 
   // Handle code changes from the CodeMirror editor
   const handleCodeChange = (newCode: string) => {
@@ -64,7 +65,8 @@ export default function Home() {
       setSocket(newSocket);
 
       newSocket.on("connected", () => {
-        while (data.elfData.length == 0) {}
+        numOfcall++;
+        console.log("I was called" + numOfcall);
         setConnected(true);
         setFolderStatus((prev) => ({
           ...prev,
@@ -75,6 +77,7 @@ export default function Home() {
         // Emit an event to send the ELF file with binary data
         // Convert the base64 string back to binary data for transmission
         const binaryData = Buffer.from(data.elfData, "base64");
+        console.log(data.elfData);
 
         // Send the binary data along with file information
         newSocket.emit("send_elf", {
