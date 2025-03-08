@@ -84,9 +84,7 @@ export default function Home() {
 
         // Send the binary data along with file information
         newSocket.emit("send_elf", {
-          folderName: data.folderName,
-          fileName: data.elfFileName,
-          elfData: binaryData, // Send the actual binary data
+          binaryData // Send the actual binary data
         });
         console.log("ELF file sent");
       });
