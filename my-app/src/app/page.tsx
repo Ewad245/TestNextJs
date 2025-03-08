@@ -76,15 +76,15 @@ export default function Home() {
 
         // Emit an event to send the ELF file with binary data
         // Convert the base64 string back to binary data for transmission
-        const binaryData = Buffer.from(data.elfData, "base64");
-        console.log(data.elfData);
+        // const binaryData = Buffer.from(data.elfData, "base64");
+        const elfDataSend = data.elfData;
 
         // Test
         newSocket.emit("message", "Hello from Node.js!");
 
         // Send the binary data along with file information
         newSocket.emit("send_elf", {
-          binaryData // Send the actual binary data
+          elfDataSend // Send the actual binary data
         });
         console.log("ELF file sent");
       });
