@@ -85,6 +85,7 @@ export default function Home() {
           fileName: data.elfFileName,
           elfData: binaryData, // Send the actual binary data
         });
+        console.log("ELF file sent");
       });
 
       newSocket.on("elf_received", () => {
