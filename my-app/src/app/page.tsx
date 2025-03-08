@@ -1,13 +1,18 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { io, Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 import CodeMirrorEditor from "./components/CodeMirrorEditor";
 
 export default function Home() {
-  const [folderStatus, setFolderStatus] = useState<{ message: string; success?: boolean } | null>(null);
-  const [makeOutput, setMakeOutput] = useState<string>('');
-  const [programCode, setProgramCode] = useState<string>('// Enter your C code here\n\nint main() {\n  printf("Hello, RV32I CPU!\n");\n  return 0;\n}');
+  const [folderStatus, setFolderStatus] = useState<{
+    message: string;
+    success?: boolean;
+  } | null>(null);
+  const [makeOutput, setMakeOutput] = useState<string>("");
+  const [programCode, setProgramCode] = useState<string>(
+    '// Enter your C code here\n\nint main() {\n  printf("Hello, RV32I CPU!\n");\n  return 0;\n}'
+  );
   const [folderName, setFolderName] = useState<string | null>(null);
   const [makeSuccess, setMakeSuccess] = useState<boolean>(false);
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -25,113 +30,118 @@ export default function Home() {
 
     try {
       // First, get the ELF file info from our API
-      setFolderStatus(prev => ({ ...prev, message: 'Fetching ELF file information...' }));
+      setFolderStatus((prev) => ({
+        ...prev,
+        message: "Fetching ELF file information...",
+      }));
 
-      const response = await fetch('/api/websocket', {
-        method: 'POST',
+      const response = await fetch("/api/websocket", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ folderName })
+        body: JSON.stringify({ folderName }),
       });
 
       const data = await response.json();
 
       if (!data.success) {
-        setFolderStatus(prev => ({
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Failed to get ELF file',
-          success: false
+          message: "Failed to get ELF file",
+          success: false,
         }));
         return;
       }
 
       // Now connect to the WebSocket server
-      setFolderStatus(prev => ({ ...prev, message: 'Connecting to RV32I CPU...' }));
+      setFolderStatus((prev) => ({
+        ...prev,
+        message: "Connecting to RV32I CPU...",
+      }));
 
       const newSocket = io(data.wsUrl);
       setSocket(newSocket);
 
-      newSocket.on('connect', () => {
+      newSocket.on("connect", () => {
         setConnected(true);
-        setFolderStatus(prev => ({
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Connected to RV32I CPU. Sending ELF file...',
-          success: true
+          message: "Connected to RV32I CPU. Sending ELF file...",
+          success: true,
         }));
 
         // Emit an event to send the ELF file with binary data
         // Convert the base64 string back to binary data for transmission
-        const binaryData = Buffer.from(data.elfData, 'base64');
-        
+        const binaryData = Buffer.from(data.elfData, "base64");
+
         // Send the binary data along with file information
-        newSocket.emit('send_elf', { 
-          folderName: data.folderName, 
+        newSocket.emit("send_elf", {
+          folderName: data.folderName,
           fileName: data.elfFileName,
-          elfData: binaryData // Send the actual binary data
+          elfData: binaryData, // Send the actual binary data
         });
       });
 
-      newSocket.on('elf_received', () => {
-        setFolderStatus(prev => ({
+      newSocket.on("elf_received", () => {
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'ELF file received by CPU. Executing program...'
+          message: "ELF file received by CPU. Executing program...",
         }));
       });
 
-      newSocket.on('execution_result', (result) => {
-        setFolderStatus(prev => ({
+      newSocket.on("execution_result", (result) => {
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Execution completed'
+          message: "Execution completed",
         }));
-        setCpuOutput(result.output || 'No output from CPU');
+        setCpuOutput(result.output || "No output from CPU");
       });
 
       // Listen for CPU output during execution
-      newSocket.on('cpu_output', (data) => {
-        setCpuOutput(data.output || 'Output from CPU');
+      newSocket.on("cpu_output", (data) => {
+        setCpuOutput(data || "Output from CPU");
       });
 
       // Listen for input request from CPU
-      newSocket.on('input_request', () => {
-        setFolderStatus(prev => ({
+      newSocket.on("input_request", () => {
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'CPU is waiting for input...'
+          message: "CPU is waiting for input...",
         }));
       });
 
       // Listen for input acknowledgment
-      newSocket.on('input_received', () => {
-        setFolderStatus(prev => ({
+      newSocket.on("input_received", () => {
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Input received by CPU, continuing execution...'
+          message: "Input received by CPU, continuing execution...",
         }));
       });
 
-      newSocket.on('error', (error) => {
-        setFolderStatus(prev => ({
+      newSocket.on("error", (error) => {
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Error occurred',
-          success: false
+          message: "Error occurred",
+          success: false,
         }));
       });
 
-      newSocket.on('disconnect', () => {
+      newSocket.on("disconnect", () => {
         setConnected(false);
-        setFolderStatus(prev => ({
+        setFolderStatus((prev) => ({
           ...prev,
-          message: 'Disconnected from RV32I CPU',
-          success: false
+          message: "Disconnected from RV32I CPU",
+          success: false,
         }));
       });
-
     } catch (error) {
       setConnected(false);
       setFolderStatus({
-        message: 'Connection error',
-        success: false
+        message: "Connection error",
+        success: false,
       });
-      console.error('Error connecting to WebSocket:', error);
+      console.error("Error connecting to WebSocket:", error);
     }
   };
 
@@ -152,31 +162,37 @@ export default function Home() {
   const createFolder = async () => {
     try {
       setFolderStatus({ message: "Creating folder..." });
-      const response = await fetch('/api/folders', {
-        method: 'POST',
+      const response = await fetch("/api/folders", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ programCode })
+        body: JSON.stringify({ programCode }),
       });
       const data = await response.json();
 
       if (data.success) {
-        setFolderStatus({ message: `Folder ${data.folderName} created successfully! (${data.totalFolders}/10 folders)`, success: true });
+        setFolderStatus({
+          message: `Folder ${data.folderName} created successfully! (${data.totalFolders}/10 folders)`,
+          success: true,
+        });
         setFolderName(data.folderName);
         if (data.makeCommand) {
-          setMakeOutput(data.makeOutput || 'No output from make command');
+          setMakeOutput(data.makeOutput || "No output from make command");
           setMakeSuccess(true);
         } else {
           setMakeOutput(`Make command failed: ${data.makeCommandMessage}`);
           setMakeSuccess(false);
         }
       } else {
-        setFolderStatus({ message: data.message || 'Failed to create folder', success: false });
+        setFolderStatus({
+          message: data.message || "Failed to create folder",
+          success: false,
+        });
       }
     } catch (error) {
-      setFolderStatus({ message: 'Error creating folder', success: false });
-      console.error('Error creating folder:', error);
+      setFolderStatus({ message: "Error creating folder", success: false });
+      console.error("Error creating folder:", error);
     }
   };
 
@@ -188,7 +204,12 @@ export default function Home() {
         <div className="w-full max-w-4xl">
           <div className="w-full max-w-4xl mx-auto mb-6">
             <div className="mb-4">
-              <label htmlFor="program-code" className="block text-sm font-medium mb-2">C Program Code:</label>
+              <label
+                htmlFor="program-code"
+                className="block text-sm font-medium mb-2"
+              >
+                C Program Code:
+              </label>
               <div className="border border-gray-300 rounded-md overflow-hidden">
                 <CodeMirrorEditor
                   socket={socket}
@@ -211,7 +232,15 @@ export default function Home() {
           </div>
 
           {folderStatus && (
-            <div className={`p-3 rounded-md text-sm mb-3 ${folderStatus.success === false ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200' : folderStatus.success === true ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'}`}>
+            <div
+              className={`p-3 rounded-md text-sm mb-3 ${
+                folderStatus.success === false
+                  ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200"
+                  : folderStatus.success === true
+                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200"
+                  : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200"
+              }`}
+            >
               <div className="font-medium">Status:</div>
               <div>{folderStatus.message}</div>
             </div>
