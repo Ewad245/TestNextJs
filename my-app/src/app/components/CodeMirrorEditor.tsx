@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { cpp } from '@codemirror/lang-cpp';
-import { vscodeDark } from '@uiw/codemirror-theme-vscode';
-import { Socket } from 'socket.io-client';
+import { useState, useEffect, useRef, KeyboardEvent } from "react";
+import CodeMirror from "@uiw/react-codemirror";
+import { cpp } from "@codemirror/lang-cpp";
+import { vscodeDark } from "@uiw/codemirror-theme-vscode";
+import { Socket } from "socket.io-client";
 
 interface CodeMirrorEditorProps {
   socket: Socket | null;
@@ -19,10 +19,10 @@ export default function CodeMirrorEditor({
   initialCode,
   onCodeChange,
   cpuOutput,
-  connected
+  connected,
 }: CodeMirrorEditorProps) {
   const [code, setCode] = useState<string>(initialCode);
-  const [userInput, setUserInput] = useState<string>('');
+  const [userInput, setUserInput] = useState<string>("");
   const [outputHistory, setOutputHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,22 +34,22 @@ export default function CodeMirrorEditor({
 
   // Handle user input submission
   const handleInputSubmit = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && userInput.trim() && socket && connected) {
+    if (e.key === "Enter" && userInput.trim() && socket && connected) {
       // Send the input to the CPU via WebSocket
-      socket.emit('user_input', { input: userInput });
-      
+      socket.emit("user_input", userInput);
+
       // Add the input to the output history
-      setOutputHistory(prev => [...prev, `> ${userInput}`]);
-      
+      setOutputHistory((prev) => [...prev, `> ${userInput}`]);
+
       // Clear the input field
-      setUserInput('');
+      setUserInput("");
     }
   };
 
   // Update output history when CPU output changes
   useEffect(() => {
     if (cpuOutput && !outputHistory.includes(cpuOutput)) {
-      setOutputHistory(prev => [...prev, cpuOutput]);
+      setOutputHistory((prev) => [...prev, cpuOutput]);
     }
   }, [cpuOutput, outputHistory]);
 
@@ -82,12 +82,21 @@ export default function CodeMirrorEditor({
         <div className="h-[350px] border border-gray-300 rounded-md bg-gray-50 dark:bg-gray-800 dark:border-gray-700 p-3 overflow-y-auto font-mono text-xs">
           {outputHistory.length > 0 ? (
             outputHistory.map((output, index) => (
-              <div key={index} className={output.startsWith('> ') ? 'text-blue-600 dark:text-blue-400' : ''}>
+              <div
+                key={index}
+                className={
+                  output.startsWith("> ")
+                    ? "text-blue-600 dark:text-blue-400"
+                    : ""
+                }
+              >
                 {output}
               </div>
             ))
           ) : (
-            <div className="text-gray-500 dark:text-gray-400">No output yet. Run your code to see results here.</div>
+            <div className="text-gray-500 dark:text-gray-400">
+              No output yet. Run your code to see results here.
+            </div>
           )}
         </div>
 
@@ -104,7 +113,7 @@ export default function CodeMirrorEditor({
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 font-mono text-xs"
           />
           <div className="absolute right-2 top-2 text-xs text-gray-500">
-            {connected ? 'Press Enter to send' : 'Connect to CPU first'}
+            {connected ? "Press Enter to send" : "Connect to CPU first"}
           </div>
         </div>
       </div>
