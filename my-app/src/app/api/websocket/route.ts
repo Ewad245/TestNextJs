@@ -7,7 +7,7 @@ import os from "os";
 const FOLDERS_DIR = path.join(os.homedir(), "generated-folders");
 
 // WebSocket connection details
-const RV32I_WS_URL = "wss://cse311.onrender.com:9092"; // Update this with your actual RV32I CPU WebSocket URL
+const RV32I_WS_URL = "ws://cse311.onrender.com:9092"; // Update this with your actual RV32I CPU WebSocket URL
 
 // Function to find the ELF file in a folder
 async function findElfFile(folderPath: string): Promise<string | null> {
