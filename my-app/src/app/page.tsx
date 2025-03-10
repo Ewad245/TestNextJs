@@ -61,7 +61,12 @@ export default function Home() {
         message: "Connecting to RV32I CPU...",
       }));
 
-      const newSocket = io(data.wsUrl);
+      const newSocket = io(data.wsUrl, {
+        transports: ["websocket"],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
       setSocket(newSocket);
 
       newSocket.on("connected", () => {
