@@ -11,7 +11,7 @@ export default function Home() {
   } | null>(null);
   const [makeOutput, setMakeOutput] = useState<string>("");
   const [programCode, setProgramCode] = useState<string>(
-    '// Enter your C code here\n\nint main() {\n  printf("Hello, RV32I CPU!\n");\n  return 0;\n}'
+    '// hello_world - Minimal bare metal Hello World for RV32I emulator\n#include <stdint.h>\n// Memory-mapped UART registers\n#define UART_BASE     0x10000000  // Base address for UART\n#define UART_THR      0x00        // Transmitter Holding Register (write)\n#define UART_LSR      0x08        // Line Status Register\n#define UART_LSR_THRE 0x20        // Transmit Hold Register Empty bit\n// Write a byte to UART\nvoid uart_write_byte(uint8_t byte) {\n    volatile uint32_t *lsr = (volatile uint32_t *)(UART_BASE + UART_LSR);\n    volatile uint32_t *thr = (volatile uint32_t *)(UART_BASE + UART_THR);\n    \n    // Wait for transmit buffer to be empty\n    while ((*lsr & UART_LSR_THRE) == 0);\n    \n    // Write the byte\n    *thr = byte;\n}\n// Write a string to UART\nvoid uart_write_string(const char* str) {\n    while (*str) {\n        uart_write_byte(*str++);\n    }\n}\n// Entry point function\nvoid c_start(void) {\n    // Send Hello World message\n    uart_write_string("Hello, World!\\r\\n");\n    \n    // Loop forever - bare metal program never returns\n    while(1) {\n        // Do nothing\n    }\n}'
   );
   const [folderName, setFolderName] = useState<string | null>(null);
   const [makeSuccess, setMakeSuccess] = useState<boolean>(false);
