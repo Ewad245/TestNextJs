@@ -16,7 +16,7 @@ interface RegisterData {
 export default function RegisterTable({ socket, connected }: RegisterTableProps) {
   // State to store register values
   const [registers, setRegisters] = useState<RegisterData>({});
-  
+
   // Register names and descriptions
   const registerInfo = [
     { reg: "x0", name: "zero", description: "Hard-wired zero" },
@@ -74,7 +74,11 @@ export default function RegisterTable({ socket, connected }: RegisterTableProps)
   // Format register value as hexadecimal
   const formatRegValue = (value: number | undefined): string => {
     if (value === undefined) return "0x00000000";
-    return `0x${value.toString(16).padStart(8, '0')}`;
+
+    // Handle 32-bit values properly by using unsigned right shift
+    // This ensures correct representation of negative numbers
+    const unsignedValue = value >>> 0; // Convert to unsigned 32-bit integer
+    return `0x${unsignedValue.toString(16).padStart(8, '0').toUpperCase()}`;
   };
 
   // Render the register table
