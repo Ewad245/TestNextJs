@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import CodeMirrorEditor from "./components/CodeMirrorEditor";
+import RegisterTable from "./components/RegisterTable";
 
 export default function Home() {
   const [folderStatus, setFolderStatus] = useState<{
@@ -110,6 +111,11 @@ export default function Home() {
       // Listen for CPU output during execution
       newSocket.on("cpu_output", (data) => {
         setCpuOutput(data || "Output from CPU");
+      });
+      
+      // Listen for register updates from CPU
+      newSocket.on("register_update", (data) => {
+        console.log("Register update received:", data);
       });
 
       // Listen for input request from CPU
@@ -261,6 +267,13 @@ export default function Home() {
               <pre className="text-xs overflow-auto whitespace-pre-wrap font-mono p-2 bg-gray-100 dark:bg-gray-900 rounded">
                 {makeOutput}
               </pre>
+            </div>
+          )}
+          
+          {/* Register Table */}
+          {folderName && makeSuccess && (
+            <div className="mt-6">
+              <RegisterTable socket={socket} connected={connected} />
             </div>
           )}
 
